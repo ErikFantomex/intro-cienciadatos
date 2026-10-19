@@ -11,8 +11,11 @@ import { SeedModule } from './seed/seed.module';
 import { FilesModule } from './files/files.module';
 import { AuthModule } from './auth/auth.module';
 import { MessagesWsModule } from './messages-ws/messages-ws.module';
+import { CryptoModule } from './crypto/crypto.module';
+import { HealthController } from './health.controller';
 
 @Module({
+  controllers: [HealthController],
   imports: [
     ConfigModule.forRoot(),
 
@@ -30,7 +33,9 @@ import { MessagesWsModule } from './messages-ws/messages-ws.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,      
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize:
+        process.env.NODE_ENV !== 'production' &&
+        process.env.ENABLE_DB_SYNCHRONIZE === 'true',
     }),
 
     ServeStaticModule.forRoot({
@@ -41,14 +46,18 @@ import { MessagesWsModule } from './messages-ws/messages-ws.module';
 
     CommonModule,
 
-    SeedModule,
-
     FilesModule,
 
     AuthModule,
 
     MessagesWsModule,
 
+    CryptoModule,
+
+    ...(process.env.ENABLE_SEED_ENDPOINT === 'true' &&
+    process.env.NODE_ENV !== 'production'
+      ? [SeedModule]
+      : []),
   ],
 })
 export class AppModule {}
