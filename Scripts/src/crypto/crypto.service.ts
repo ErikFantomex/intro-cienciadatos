@@ -2,12 +2,13 @@ import {
   BadGatewayException,
   BadRequestException,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   Logger,
   NotFoundException,
   ServiceUnavailableException,
-  TooManyRequestsException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -97,7 +98,10 @@ export class CryptoService {
       case 404:
         return new NotFoundException('No se encontró la información solicitada.');
       case 429:
-        return new TooManyRequestsException('CoinGecko limitó las solicitudes. Inténtalo más tarde.');
+        return new HttpException(
+          'CoinGecko limitó las solicitudes. Inténtalo más tarde.',
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
       case 502:
         return new BadGatewayException('El proveedor devolvió una respuesta inválida.');
       case 503:
