@@ -3,42 +3,84 @@ services:
     image: mysql:8.4
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Define MYSQL_ROOT_PASSWORD en .env}
-      MYSQL_DATABASE: agricultura
-      MYSQL_USER: dash_user
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-crypto_db}
+      MYSQL_USER: ${MYSQL_USER:-crypto_user}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Define MYSQL_PASSWORD en .env}
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./mysql:/docker-entrypoint-initdb.d:ro
+      - ./database/mysql:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql --protocol=TCP -h 127.0.0.1 -u \"$$MYSQL_USER\" \"$$MYSQL_DATABASE\" -e 'SELECT 1 FROM mediciones LIMIT 1' >/dev/null 2>&1"]
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h 127.0.0.1 -u root --password="$$MYSQL_ROOT_PASSWORD" --silent && MYSQL_PWD="$$MYSQL_PASSWORD" mysql --protocol=TCP -h 127.0.0.1 -u "$$MYSQL_USER" "$$MYSQL_DATABASE" -e 'SELECT 1 FROM cryptocurrencies LIMIT 1' >/dev/null 2>&1
       interval: 5s
       timeout: 5s
       retries: 30
       start_period: 30s
+    networks:
+      - crypto-data-network
     restart: unless-stopped
 
-  dash:
-    build: .
-    image: dash-agricultura:local
-    ports:
-      - "127.0.0.1:8050:8050"
+  crypto-api:
+    build:
+      context: ./crypto-api
+    image: cryptoinsight-api:local
     environment:
-      DB_HOST: mysql
-      DB_PORT: "3306"
-      DB_NAME: agricultura
-      DB_USER: dash_user
-      DB_PASSWORD: ${MYSQL_PASSWORD:?Define MYSQL_PASSWORD en .env}
+      CRYPTO_DB_HOST: mysql
+      CRYPTO_DB_PORT: "3306"
+      CRYPTO_DB_NAME: ${MYSQL_DATABASE:-crypto_db}
+      CRYPTO_DB_USER: ${MYSQL_USER:-crypto_user}
+      CRYPTO_DB_PASSWORD: ${MYSQL_PASSWORD:?Define MYSQL_PASSWORD en .env}
+      COINGECKO_API_KEY: ${COINGECKO_API_KEY:?Define COINGECKO_API_KEY en .env}
+      COINGECKO_BASE_URL: ${COINGECKO_BASE_URL:-https://api.coingecko.com/api/v3}
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:?Define INTERNAL_API_KEY en .env}
+      DEFAULT_COINS: ${DEFAULT_COINS:-bitcoin,ethereum,solana}
+      DEFAULT_CURRENCY: ${DEFAULT_CURRENCY:-usd}
+    ports:
+      - "127.0.0.1:8000:8000"
     depends_on:
       mysql:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - integration-network
+      - crypto-data-network
+    restart: unless-stopped
+
+  crypto-dashboard:
+    build:
+      context: ./crypto-dashboard
+    image: cryptoinsight-dashboard:local
+    environment:
+      NEST_API_URL: http://nest-api:3000
+      DEFAULT_COINS: ${DEFAULT_COINS:-bitcoin,ethereum,solana}
+      DEFAULT_CURRENCY: ${DEFAULT_CURRENCY:-usd}
+    ports:
+      - "127.0.0.1:8501:8501"
+    depends_on:
+      nest-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - frontend-network
     restart: unless-stopped
 
   postgres:
     image: postgres:14.3
     environment:
+      POSTGRES_PASSWORD: ${TESLO_DB_PASSWORD:?Define TESLO_DB_PASSWORD en .env}
       POSTGRES_DB: ${TESLO_DB_NAME:-teslo}
       POSTGRES_USER: ${TESLO_DB_USERNAME:-teslo_user}
-      POSTGRES_PASSWORD: ${TESLO_DB_PASSWORD:?Define TESLO_DB_PASSWORD en .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -47,9 +89,11 @@ services:
       timeout: 5s
       retries: 20
       start_period: 10s
+    networks:
+      - nest-data-network
     restart: unless-stopped
 
-  api:
+  nest-api:
     build:
       context: ./Scripts
       dockerfile: Dockerfile
@@ -58,6 +102,7 @@ services:
     ports:
       - "127.0.0.1:${TESLO_PORT:-3000}:3000"
     environment:
+      NODE_ENV: ${NODE_ENV:-development}
       PORT: "3000"
       HOST_API: ${TESLO_HOST_API:-http://localhost:3000/api}
       DB_HOST: postgres
@@ -65,15 +110,37 @@ services:
       DB_NAME: ${TESLO_DB_NAME:-teslo}
       DB_USERNAME: ${TESLO_DB_USERNAME:-teslo_user}
       DB_PASSWORD: ${TESLO_DB_PASSWORD:?Define TESLO_DB_PASSWORD en .env}
-      JWT_SECRET: ${TESLO_JWT_SECRET:?Define TESLO_JWT_SECRET en .env}
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
+      ENABLE_DB_SYNCHRONIZE: ${ENABLE_DB_SYNCHRONIZE:-false}
+      ENABLE_SEED_ENDPOINT: ${ENABLE_SEED_ENDPOINT:-false}
+      CRYPTO_API_URL: http://crypto-api:8000
+      CRYPTO_INTERNAL_API_KEY: ${CRYPTO_INTERNAL_API_KEY:?Define CRYPTO_INTERNAL_API_KEY en .env}
     volumes:
       - scripts_static:/app/static
     depends_on:
       postgres:
         condition: service_healthy
+      crypto-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - frontend-network
+      - integration-network
+      - nest-data-network
     restart: unless-stopped
 
 volumes:
   mysql_data:
   postgres_data:
   scripts_static:
+
+networks:
+  frontend-network:
+  integration-network:
+  crypto-data-network:
+  nest-data-network:
