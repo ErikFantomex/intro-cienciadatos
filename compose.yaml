@@ -33,5 +33,47 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  postgres:
+    image: postgres:14.3
+    environment:
+      POSTGRES_DB: ${TESLO_DB_NAME:-teslo}
+      POSTGRES_USER: ${TESLO_DB_USERNAME:-teslo_user}
+      POSTGRES_PASSWORD: ${TESLO_DB_PASSWORD:?Define TESLO_DB_PASSWORD en .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./Scripts
+      dockerfile: Dockerfile
+      target: prod
+    image: teslo-api:local
+    ports:
+      - "127.0.0.1:${TESLO_PORT:-3000}:3000"
+    environment:
+      PORT: "3000"
+      HOST_API: ${TESLO_HOST_API:-http://localhost:3000/api}
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: ${TESLO_DB_NAME:-teslo}
+      DB_USERNAME: ${TESLO_DB_USERNAME:-teslo_user}
+      DB_PASSWORD: ${TESLO_DB_PASSWORD:?Define TESLO_DB_PASSWORD en .env}
+      JWT_SECRET: ${TESLO_JWT_SECRET:?Define TESLO_JWT_SECRET en .env}
+    volumes:
+      - scripts_static:/app/static
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   mysql_data:
+  postgres_data:
+  scripts_static:
