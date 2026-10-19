@@ -3,7 +3,7 @@ services:
     image: mysql:8.4
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Define MYSQL_ROOT_PASSWORD en .env}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-crypto_db}
+      MYSQL_DATABASE: crypto_db
       MYSQL_USER: ${MYSQL_USER:-crypto_user}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Define MYSQL_PASSWORD en .env}
     volumes:
@@ -26,9 +26,9 @@ services:
       context: ./crypto-api
     image: cryptoinsight-api:local
     environment:
-      CRYPTO_DB_HOST: mysql
-      CRYPTO_DB_PORT: "3306"
-      CRYPTO_DB_NAME: ${MYSQL_DATABASE:-crypto_db}
+      CRYPTO_DB_HOST: ${CRYPTO_DB_HOST:-mysql}
+      CRYPTO_DB_PORT: ${CRYPTO_DB_PORT:-3306}
+      CRYPTO_DB_NAME: crypto_db
       CRYPTO_DB_USER: ${MYSQL_USER:-crypto_user}
       CRYPTO_DB_PASSWORD: ${MYSQL_PASSWORD:?Define MYSQL_PASSWORD en .env}
       COINGECKO_API_KEY: ${COINGECKO_API_KEY:?Define COINGECKO_API_KEY en .env}
@@ -57,7 +57,7 @@ services:
       context: ./crypto-dashboard
     image: cryptoinsight-dashboard:local
     environment:
-      NEST_API_URL: http://nest-api:3000
+      NEST_API_URL: ${NEST_API_URL:-http://nest-api:3000}
       DEFAULT_COINS: ${DEFAULT_COINS:-bitcoin,ethereum,solana}
       DEFAULT_CURRENCY: ${DEFAULT_CURRENCY:-usd}
     ports:
@@ -105,7 +105,7 @@ services:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: "3000"
       HOST_API: ${TESLO_HOST_API:-http://localhost:3000/api}
-      DB_HOST: postgres
+      DB_HOST: ${TESLO_DB_HOST:-postgres}
       DB_PORT: "5432"
       DB_NAME: ${TESLO_DB_NAME:-teslo}
       DB_USERNAME: ${TESLO_DB_USERNAME:-teslo_user}
@@ -113,7 +113,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
       ENABLE_DB_SYNCHRONIZE: ${ENABLE_DB_SYNCHRONIZE:-false}
       ENABLE_SEED_ENDPOINT: ${ENABLE_SEED_ENDPOINT:-false}
-      CRYPTO_API_URL: http://crypto-api:8000
+      CRYPTO_API_URL: ${CRYPTO_API_URL:-http://crypto-api:8000}
       CRYPTO_INTERNAL_API_KEY: ${CRYPTO_INTERNAL_API_KEY:?Define CRYPTO_INTERNAL_API_KEY en .env}
     volumes:
       - scripts_static:/app/static

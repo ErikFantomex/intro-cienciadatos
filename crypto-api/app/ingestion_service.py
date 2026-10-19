@@ -17,6 +17,7 @@ from sqlalchemy import (
     select,
 )
 from sqlalchemy.dialects.mysql import insert as mysql_insert
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.coingecko_client import CoinGeckoError, fetch_market_chart
@@ -192,6 +193,10 @@ def ingest_market_data(session: Session, request: IngestRequest) -> dict:
                     "message": str(error),
                 }
             )
+        except SQLAlchemyError:
+            logger.exception("MySQL ingestion failure for %s", coin_id)
+            _save_failure(session, run_id, received, "No fue posible guardar los datos en MySQL.")
+            raise
         except Exception as error:
             logger.exception("Unexpected ingestion failure for %s", coin_id)
             _save_failure(session, run_id, received, "Error interno al procesar los datos.")

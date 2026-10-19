@@ -108,11 +108,18 @@ with st.sidebar:
         "Selecciona una o más criptomonedas",
         options=available_coins,
         default=[coin for coin in default_coins if coin in available_coins],
+        key="selected_coins",
     )
-    currency = st.text_input("Moneda de cotización", value=default_currency).strip().lower()
-    start_date = st.date_input("Fecha inicial", value=date.today() - timedelta(days=30))
-    end_date = st.date_input("Fecha final", value=date.today())
-    moving_window = st.slider("Ventana del promedio móvil", 2, 90, 7)
+    currency = st.text_input(
+        "Moneda de cotización", value=default_currency, key="currency"
+    ).strip().lower()
+    start_date = st.date_input(
+        "Fecha inicial", value=date.today() - timedelta(days=30), key="start_date"
+    )
+    end_date = st.date_input("Fecha final", value=date.today(), key="end_date")
+    moving_window = st.slider(
+        "Ventana del promedio móvil", 2, 90, 7, key="moving_window"
+    )
     st.button("Recargar datos")
 
     if st.button("Actualizar desde CoinGecko", type="primary"):
@@ -238,8 +245,26 @@ try:
         runs_frame = pd.DataFrame(runs)
         latest = runs_frame.iloc[0]
         st.info(
-            f"Última ejecución: {latest['coin_id']} · {latest['status']} · "
+            f"Última ejecución: {latest['coin_id']} · "
+            f"{ {'success': 'completada', 'failed': 'fallida', 'running': 'en curso'}.get(latest['status'], 'desconocida') } · "
             f"{latest['started_at']}"
+        )
+        runs_frame["status"] = runs_frame["status"].map(
+            {"success": "completada", "failed": "fallida", "running": "en curso"}
+        ).fillna("desconocida")
+        runs_frame = runs_frame.rename(
+            columns={
+                "coin_id": "Criptomoneda",
+                "currency": "Moneda",
+                "start_date": "Fecha inicial",
+                "end_date": "Fecha final",
+                "records_received": "Registros recibidos",
+                "records_stored": "Registros guardados o actualizados",
+                "status": "Estado",
+                "error_message": "Error",
+                "started_at": "Inicio",
+                "finished_at": "Fin",
+            }
         )
         st.dataframe(runs_frame, use_container_width=True, hide_index=True)
     else:

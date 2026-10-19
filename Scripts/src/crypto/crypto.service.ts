@@ -102,6 +102,8 @@ export class CryptoService {
         return new BadGatewayException('El proveedor devolvió una respuesta inválida.');
       case 503:
         return new ServiceUnavailableException('El servicio financiero o MySQL no está disponible.');
+      case 500:
+        return new InternalServerErrorException('Ocurrió un error inesperado en el servicio financiero.');
       default:
         if (status && status >= 500) {
           return new BadGatewayException('El servicio financiero no pudo completar la solicitud.');

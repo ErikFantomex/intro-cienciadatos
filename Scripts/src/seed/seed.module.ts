@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 
 import { AuthModule } from './../auth/auth.module';
 import { ProductsModule } from './../products/products.module';
@@ -10,6 +11,7 @@ import { SeedController } from './seed.controller';
   controllers: [SeedController],
   providers: [SeedService],
   imports: [
+    ConfigModule,
     ProductsModule,
     AuthModule,
   ]
