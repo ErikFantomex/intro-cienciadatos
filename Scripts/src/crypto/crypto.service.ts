@@ -85,9 +85,10 @@ export class CryptoService {
   }
 
   private mapError(error: unknown): Error {
-    const status = (error as AxiosError).response?.status;
+    const status = error instanceof AxiosError ? error.response?.status : undefined;
     switch (status) {
       case 400:
+      case 422:
         return new BadRequestException('La solicitud financiera no es válida.');
       case 401:
         return new UnauthorizedException('La solicitud no está autenticada.');

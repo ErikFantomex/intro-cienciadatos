@@ -1,6 +1,5 @@
 import os
 from dataclasses import dataclass
-from urllib.parse import quote_plus
 
 from sqlalchemy import URL
 

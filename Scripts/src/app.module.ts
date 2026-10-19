@@ -33,6 +33,8 @@ import { HealthController } from './health.controller';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,      
       autoLoadEntities: true,
+      migrations: [join(__dirname, 'migrations/*{.ts,.js}')],
+      migrationsRun: true,
       synchronize:
         process.env.NODE_ENV !== 'production' &&
         process.env.ENABLE_DB_SYNCHRONIZE === 'true',

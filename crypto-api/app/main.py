@@ -2,7 +2,7 @@ import logging
 from datetime import date
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, status
-from sqlalchemy import inspect, select
+from sqlalchemy import inspect, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -50,6 +50,8 @@ def health() -> dict:
             )
         with engine.connect() as connection:
             connection.execute(select(1))
+            for table in REQUIRED_TABLES:
+                connection.execute(text(f"SELECT 1 FROM `{table}` LIMIT 0"))
         return {"status": "healthy", "mysql": "connected", "tables": "ready"}
     except HTTPException:
         raise

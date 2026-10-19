@@ -1,4 +1,4 @@
-from datetime import date, datetime, time, timezone
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 
 from sqlalchemy import select
@@ -38,7 +38,7 @@ def get_market_rows(
     if end_date:
         statement = statement.where(
             MarketPrice.observed_at
-            < datetime.combine(end_date, time.max).replace(microsecond=999999)
+            < datetime.combine(end_date + timedelta(days=1), time.min)
         )
     return list(
         session.execute(statement.order_by(MarketPrice.observed_at, Cryptocurrency.coin_id))

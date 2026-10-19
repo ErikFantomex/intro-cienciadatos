@@ -32,6 +32,10 @@ def fetch_market_chart(
         if response.status_code == 429:
             raise CoinGeckoError("CoinGecko alcanzó su límite de solicitudes.", 429)
         if response.status_code >= 400:
+            if response.status_code == 404:
+                raise CoinGeckoError("CoinGecko no encontró la criptomoneda solicitada.", 404)
+            if response.status_code == 400:
+                raise CoinGeckoError("CoinGecko rechazó los parámetros de consulta.", 400)
             raise CoinGeckoError(
                 f"CoinGecko rechazó la consulta (HTTP {response.status_code}).",
                 502,

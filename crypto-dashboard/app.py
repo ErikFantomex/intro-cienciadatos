@@ -113,6 +113,7 @@ with st.sidebar:
     start_date = st.date_input("Fecha inicial", value=date.today() - timedelta(days=30))
     end_date = st.date_input("Fecha final", value=date.today())
     moving_window = st.slider("Ventana del promedio móvil", 2, 90, 7)
+    st.button("Recargar datos")
 
     if st.button("Actualizar desde CoinGecko", type="primary"):
         token = st.session_state.get("jwt_token")
