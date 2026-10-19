@@ -1,4 +1,4 @@
-# Dash + MySQL con Docker
+# Dash + API NestJS con Docker
 
 Entorno local con un dashboard Python (Dash), una API NestJS y sus bases
 de datos separadas: MySQL para las mediciones agrícolas y PostgreSQL para
@@ -8,7 +8,7 @@ Requiere Docker Engine con Compose v2 o Docker Desktop iniciado
 
 ## 1. Preparación
 
-Extrae el ZIP y abre una terminal en la carpeta dash-mysql, donde está compose.yaml.
+Abre una terminal en la carpeta raíz del proyecto, donde está `compose.yaml`.
 
 Comprueba:
 
@@ -37,8 +37,6 @@ del primer inicio. No publiques .env. Dash usa dash_user, no root.
 ## 2. Descargar imágenes y arrancar
 
 ```bash
-docker pull mysql:8.4
-docker pull python:3.12-slim
 docker compose up -d --build
 docker compose ps
 ```
