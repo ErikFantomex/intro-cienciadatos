@@ -11,6 +11,8 @@ def prepare_market_data(records: list[dict]) -> pd.DataFrame:
 
     frame["observed_at"] = pd.to_datetime(frame["observed_at"], utc=True, errors="coerce")
     for column in NUMERIC_COLUMNS:
+        if column not in frame:
+            frame[column] = pd.NA
         frame[column] = pd.to_numeric(frame[column], errors="coerce")
     frame = frame.dropna(subset=["observed_at", "price"])
     frame = frame.sort_values(["coin_id", "observed_at"]).reset_index(drop=True)
