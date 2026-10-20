@@ -210,7 +210,11 @@ try:
             indicators = calculate_indicators(coin_frame)
             st.markdown(f"### Indicadores de {coin_id}")
             cols = st.columns(4)
-            cols[0].metric("Volatilidad (retornos)", format_number(indicators.get("volatility"), "%"))
+            volatility = indicators.get("volatility")
+            cols[0].metric(
+                "Volatilidad (retornos)",
+                f"{volatility:.2f}%" if volatility is not None else "Sin datos",
+            )
             cols[1].metric("Observaciones", indicators.get("observations", 0))
             cols[2].metric("Última fecha observada", str(indicators.get("last_observed_at", "Sin datos")))
             cols[3].metric("Precio último", format_number(indicators.get("last_price"), currency.upper()))

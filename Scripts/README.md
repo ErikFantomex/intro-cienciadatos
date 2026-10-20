@@ -1,37 +1,15 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# API NestJS de CryptoInsight
 
+Esta aplicación conserva los módulos de usuarios, autenticación y productos
+Teslo, y agrega el gateway REST de CryptoInsight. La configuración canónica
+de los cinco servicios está en [`../compose.yaml`](../compose.yaml); ejecuta
+los comandos de inicio desde la raíz y consulta allí las instrucciones,
+variables, redes y persistencia.
 
-# Teslo API
+Swagger NestJS está disponible en `http://localhost:3000/api`. La API financiera
+se enruta bajo `/api/crypto/*` y llama a FastAPI mediante `CRYPTO_API_URL`.
 
-1. Clonar proyecto
-2. ```yarn install```
-3. Clonar el archivo ```.env.template``` y renombrarlo a ```.env```
-4. Cambiar las variables de entorno
-5. Levantar la base de datos
-```
-docker compose up -d
-```
-
-6. Levantar: ```yarn start:dev```
-
-7. Ejecutar SEED 
-```
-http://localhost:3000/api/seed
-```
-
-
-
-# Production notes:
-
-Ejecutar este comando
-```
-docker compose -f docker-compose.prod.yml build
-```
-
-
-## Docker Repo Name
-[klerith/teslo-shop-cors:latest](https://hub.docker.com/repository/docker/klerith/teslo-shop-cors/general)
-
-docker buildx build --platform linux/amd64,linux/arm64 -t klerith/teslo-shop-cors:1.0.0 --push .
+La ruta seed destructiva ya no usa `GET`: es `POST /api/seed`, requiere un JWT
+de administrador, solo se habilita fuera de producción con
+`ENABLE_SEED_ENDPOINT=true` y está desactivada por defecto. No la habilites
+contra una base con datos que quieras conservar.

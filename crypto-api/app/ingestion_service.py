@@ -1,5 +1,5 @@
 import logging
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from sqlalchemy import (

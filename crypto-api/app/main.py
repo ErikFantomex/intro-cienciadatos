@@ -7,6 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.coingecko_client import CoinGeckoError
+from app.config import settings
 from app.database import engine, get_session
 from app.ingestion_service import (
     Cryptocurrency,
@@ -71,7 +72,7 @@ def coins(session: Session = Depends(get_session)) -> list[Cryptocurrency]:
 @router.get("/market-data", response_model=list[MarketPriceOut])
 def market_data(
     coin_ids: str | None = Query(default=None),
-    currency: str = Query(default="usd", min_length=2, max_length=10),
+    currency: str = Query(default=settings.default_currency, min_length=2, max_length=10),
     start_date: date | None = None,
     end_date: date | None = None,
     session: Session = Depends(get_session),
@@ -86,7 +87,7 @@ def market_data(
 @router.get("/market-summary", response_model=list[MarketSummaryOut])
 def market_summary(
     coin_ids: str | None = Query(default=None),
-    currency: str = Query(default="usd", min_length=2, max_length=10),
+    currency: str = Query(default=settings.default_currency, min_length=2, max_length=10),
     start_date: date | None = None,
     end_date: date | None = None,
     session: Session = Depends(get_session),

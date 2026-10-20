@@ -352,8 +352,9 @@ Las consultas financieras requieren la clave interna entre servicios. La
 ingestión además exige un JWT válido de NestJS. El login no devuelve hashes de
 contraseña. La ruta seed destructiva es `POST`, requiere JWT de administrador,
 está desactivada por defecto y no se registra en producción. TypeORM mantiene
-`synchronize` deshabilitado en producción; usa migraciones antes de cambiar
-esquemas con datos importantes.
+`synchronize` deshabilitado en producción; la migración inicial de PostgreSQL
+se aplica al iniciar la API y usa migraciones antes de cambiar esquemas con
+datos importantes.
 
 ## Guion breve de presentación
 

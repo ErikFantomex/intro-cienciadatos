@@ -95,8 +95,14 @@ def market_summary_response(
                 "min_price": min(prices),
                 "average_price": sum(prices) / len(prices),
                 "percentage_change": percentage_change,
-                "latest_market_cap": last_price.market_cap,
-                "latest_total_volume": last_price.total_volume,
+                "latest_market_cap": next(
+                    (row[0].market_cap for row in reversed(observations) if row[0].market_cap is not None),
+                    None,
+                ),
+                "latest_total_volume": next(
+                    (row[0].total_volume for row in reversed(observations) if row[0].total_volume is not None),
+                    None,
+                ),
                 "observations": len(observations),
                 "first_observed_at": first_price.observed_at,
                 "last_observed_at": last_price.observed_at,

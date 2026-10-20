@@ -3,10 +3,12 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from app.config import settings
+
 
 class IngestRequest(BaseModel):
     coin_ids: list[str] = Field(min_length=1, max_length=20)
-    currency: str = Field(default="usd", min_length=2, max_length=10)
+    currency: str = Field(default=settings.default_currency, min_length=2, max_length=10)
     start_date: date
     end_date: date
 

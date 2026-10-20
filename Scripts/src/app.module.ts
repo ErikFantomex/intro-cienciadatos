@@ -41,7 +41,8 @@ import { HealthController } from './health.controller';
     }),
 
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname,'..','public'), 
+      rootPath: join(__dirname, '..', 'static'),
+      serveRoot: '/static',
     }),
 
     ProductsModule,
