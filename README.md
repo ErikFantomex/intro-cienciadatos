@@ -1,115 +1,171 @@
-# CryptoInsight MVP
+# CryptoInsight
 
-Dashboard académico para consultar y visualizar precios históricos de
-criptomonedas. La aplicación consume la API pública de Binance, guarda las
-observaciones en SQLite y presenta indicadores y gráficas con Streamlit.
+> MVP académico para explorar datos históricos de criptomonedas.
 
-> La información es únicamente educativa y no constituye asesoría financiera.
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![Data](https://img.shields.io/badge/data-Binance%20public-F0B90B)](https://www.binance.com/en/markets)
 
-## Alcance actual
+CryptoInsight permite consultar, almacenar y visualizar precios históricos de
+criptomonedas. La aplicación obtiene velas diarias desde la API pública de
+Binance, las persiste en SQLite y presenta métricas y visualizaciones mediante
+Streamlit.
 
-El MVP permite:
+**Aviso:** este proyecto es educativo. No ejecuta operaciones, no administra
+fondos y no constituye asesoría financiera.
 
-- Consultar velas diarias públicas de Binance sin API key ni autenticación.
-- Seleccionar Bitcoin, Ethereum, Solana u otro símbolo compatible con Binance.
-- Elegir moneda (`usd`, `usdt` o `eur`) y un rango de fechas.
-- Guardar precios y volumen en una base SQLite local.
-- Evitar duplicados al repetir una ingestión.
-- Mostrar precio inicial, final, máximo, mínimo, promedio y variación.
-- Mostrar gráficas de precio, volumen, rendimientos y promedio móvil.
-- Consultar los datos guardados mediante una API FastAPI documentada con Swagger.
+## Demo y documentación
 
-## Fuera del alcance
+- **Página del proyecto:** <https://Erikafantomex.github.io/intro-cienciadatos/>
+- **Repositorio:** <https://github.com/Erikafantomex/intro-cienciadatos>
+- **Swagger local:** <http://127.0.0.1:8000/docs>
 
-Esta entrega no incluye:
+GitHub Pages publica la portada y documentación estática. El dashboard
+interactivo requiere ejecutar Python en local o desplegarlo en una plataforma
+que soporte aplicaciones Python, como Streamlit Community Cloud, Render o
+Railway.
 
-- Compra, venta, órdenes ni conexión a cuentas de Binance.
-- Portafolios, alertas, predicciones o recomendaciones de inversión.
-- Usuarios, login, JWT, pagos o roles.
+## Funcionalidades
+
+- Consulta de velas diarias desde Binance Spot.
+- Sin API key, cuenta de Binance ni autenticación de usuario.
+- Selección de criptomonedas y rango de fechas.
+- Soporte para `usd`, `usdt` y `eur`.
+- Persistencia local en SQLite.
+- Ingestión idempotente: repetir una consulta no duplica observaciones.
+- Indicadores de precio inicial, final, máximo, mínimo, promedio y variación.
+- Gráficas de precio, volumen, rendimientos y promedio móvil.
+- API REST documentada automáticamente con OpenAPI/Swagger.
+- Healthcheck para verificar la disponibilidad del servicio.
+
+## Alcance y límites
+
+### Incluido en este MVP
+
+El proyecto cubre un flujo completo y demostrable de análisis histórico:
+
+1. El usuario selecciona un activo y un periodo.
+2. FastAPI solicita las velas a Binance.
+3. Las observaciones se validan y almacenan en SQLite.
+4. Streamlit consulta los datos guardados.
+5. El dashboard calcula indicadores y genera visualizaciones.
+
+### No incluido
+
+- Compra, venta, órdenes o trading automatizado.
+- Conexión a cuentas, saldos o claves privadas de Binance.
+- Portafolios, alertas, predicciones o señales de inversión.
+- Usuarios, roles, login, JWT o pagos.
 - MySQL, PostgreSQL, NestJS o el módulo de productos de la versión anterior.
-- Un dashboard Python ejecutándose dentro de GitHub Pages.
-
-GitHub Pages solo sirve archivos estáticos; no puede ejecutar FastAPI, SQLite ni
-Streamlit. Por eso se incluye una página pública de presentación en
-[`docs/index.html`](./docs/index.html), mientras que el dashboard interactivo
-se ejecuta localmente. Para publicar el dashboard en internet se necesita un
-servicio que ejecute Python, como Streamlit Community Cloud, Render o Railway.
+- Dashboard ejecutable directamente en GitHub Pages.
 
 ## Arquitectura
 
 ```text
-Usuario
-  └── Streamlit (:8501)
-        └── FastAPI (:8000)
-              ├── Binance Spot API pública
-              └── SQLite (cryptoinsight.db)
+┌──────────────┐       HTTP        ┌──────────────┐
+│  Streamlit   │ ────────────────> │   FastAPI    │
+│    :8501     │                   │    :8000     │
+└──────────────┘                   └──────┬───────┘
+                                          │
+                             ┌────────────┴────────────┐
+                             │                         │
+                       Binance API              SQLite local
+                    (fuente pública)          (cryptoinsight.db)
 ```
 
-| Componente | Función |
+| Componente | Responsabilidad |
 |---|---|
-| `crypto-dashboard` | Interfaz, filtros, métricas y visualizaciones |
+| `crypto-dashboard` | Interfaz, filtros, métricas y gráficas |
 | `crypto-api` | Validación, ingestión, persistencia y consultas |
-| Binance | Fuente externa de velas públicas |
-| SQLite | Persistencia local sin configuración adicional |
+| Binance Spot API | Fuente externa de velas públicas |
+| SQLite | Almacenamiento local sin configuración adicional |
 
-## Ejecutar localmente
+## Requisitos
 
-Requisitos: Python 3.10 o superior y `curl`.
+Para ejecutar localmente:
+
+- Python 3.10 o superior.
+- `curl`.
+- Acceso de red a `api.binance.com`.
+
+Docker y una cuenta externa no son necesarios.
+
+## Inicio rápido
+
+Desde la raíz del proyecto:
 
 ```bash
 chmod +x run-mvp.sh
 ./run-mvp.sh
 ```
 
-El script crea `.venv`, instala las dependencias, inicia FastAPI y después
-Streamlit. Abre:
+El script:
 
-- Dashboard: <http://127.0.0.1:8501>
-- Swagger: <http://127.0.0.1:8000/docs>
-- Healthcheck: <http://127.0.0.1:8000/health>
+1. Crea el entorno virtual `.venv`.
+2. Instala las dependencias de FastAPI y Streamlit.
+3. Inicia la API en el puerto `8000`.
+4. Inicia el dashboard en el puerto `8501`.
 
-La base se crea como `cryptoinsight.db` en la raíz del proyecto. Para detener
-la aplicación presiona `Ctrl+C`.
+Abre el dashboard en <http://127.0.0.1:8501>.
 
-## Ejecutar con Docker
+La base de datos se crea automáticamente como `cryptoinsight.db`. Para detener
+ambos servicios, presiona `Ctrl+C`.
 
-Si Docker está instalado:
+## Ejecución con Docker
+
+Con Docker Compose instalado:
 
 ```bash
 docker compose up --build
 ```
 
-Los mismos puertos quedan publicados en `8501` y `8000`. Docker usa un volumen
-llamado `crypto_data` para conservar la base SQLite.
+Servicios publicados:
+
+| Servicio | URL |
+|---|---|
+| Dashboard | <http://127.0.0.1:8501> |
+| API y Swagger | <http://127.0.0.1:8000/docs> |
+| Healthcheck | <http://127.0.0.1:8000/health> |
+
+El volumen `crypto_data` conserva la base SQLite entre reinicios.
 
 ## Uso del dashboard
 
-1. Selecciona una o más monedas.
-2. Selecciona `usd`, `usdt` o `eur`.
-3. Define las fechas inicial y final.
-4. Presiona **Actualizar desde Binance** para descargar y guardar datos.
-5. Revisa las métricas y gráficas.
+1. Selecciona una o más criptomonedas.
+2. Selecciona una moneda de cotización: `usd`, `usdt` o `eur`.
+3. Define la fecha inicial y la fecha final.
+4. Presiona **Actualizar desde Binance**.
+5. Consulta los indicadores y las gráficas.
 
-Los identificadores se convierten a mercados de Binance. Por ejemplo,
-`bitcoin` se consulta como `BTCUSDT`, `ethereum` como `ETHUSDT` y `solana` como
-`SOLUSDT`. También puedes usar directamente `btc`, `eth` o `sol`. Si un
-identificador no existe, la API muestra un error claro y no crea datos
-ficticios.
+Los identificadores comunes se traducen a mercados de Binance:
 
-## API principal
+| Identificador | Mercado consultado |
+|---|---|
+| `bitcoin` o `btc` | `BTCUSDT` |
+| `ethereum` o `eth` | `ETHUSDT` |
+| `solana` o `sol` | `SOLUSDT` |
+| `dogecoin` o `doge` | `DOGEUSDT` |
 
-FastAPI se documenta automáticamente en `/docs`.
+También se pueden agregar otros identificadores si existe el mercado
+correspondiente en Binance. Un símbolo inválido produce un error y no genera
+datos ficticios.
 
-| Método | Ruta | Uso |
+## API
+
+La especificación interactiva está disponible en
+<http://127.0.0.1:8000/docs> después de iniciar el proyecto.
+
+| Método | Endpoint | Descripción |
 |---|---|---|
-| `GET` | `/health` | Comprueba que la API y SQLite estén disponibles |
-| `GET` | `/api/coins` | Lista las monedas ya guardadas |
-| `GET` | `/api/market-data` | Devuelve observaciones históricas |
+| `GET` | `/health` | Comprueba API, tablas y SQLite |
+| `GET` | `/api/coins` | Lista activos almacenados |
+| `GET` | `/api/market-data` | Consulta observaciones históricas |
 | `GET` | `/api/market-summary` | Devuelve indicadores agregados |
-| `POST` | `/api/ingest` | Descarga y guarda velas desde Binance |
-| `GET` | `/api/ingestion-runs` | Muestra ejecuciones recientes |
+| `POST` | `/api/ingest` | Descarga y guarda velas de Binance |
+| `GET` | `/api/ingestion-runs` | Lista ejecuciones recientes |
 
-Ejemplo:
+### Ejemplo de ingestión
 
 ```bash
 curl -X POST http://127.0.0.1:8000/api/ingest \
@@ -122,52 +178,65 @@ curl -X POST http://127.0.0.1:8000/api/ingest \
   }'
 ```
 
-La API no requiere encabezados de autenticación en el MVP local.
+No se requieren encabezados de autenticación en este MVP.
 
-## Publicar la página de proyecto en GitHub Pages
+## Publicación en GitHub Pages
 
-La carpeta `docs/` contiene una página estática que GitHub Pages puede servir.
-Los enlaces de la página están configurados para
-`github.com/Erikafantomex/intro-cienciadatos`.
+La página estática se encuentra en [`docs/index.html`](./docs/index.html) y se
+publica mediante [`.github/workflows/pages.yml`](./.github/workflows/pages.yml).
+
+Para activarla:
 
 1. Sube el repositorio a GitHub.
-2. En **Settings → Pages**, selecciona **Deploy from a branch**.
-3. Elige la rama principal y la carpeta `/docs`.
-4. Guarda la configuración.
+2. Abre **Settings → Pages**.
+3. Selecciona **GitHub Actions** como fuente de despliegue.
+4. Ejecuta un push a la rama `main`.
 
-La URL tendrá esta forma:
+GitHub Pages no ejecuta FastAPI, SQLite ni Streamlit. Para publicar el
+dashboard, despliega `crypto-api` y `crypto-dashboard` en un proveedor con
+soporte para Python y configura `CRYPTO_API_URL` con la URL pública de FastAPI.
 
-```text
-https://Erikafantomex.github.io/intro-cienciadatos/
-```
-
-Esa página documenta el MVP y enlaza al código. No reemplaza el dashboard
-interactivo: para mostrar el dashboard en línea hay que desplegar también
-`crypto-api` y `crypto-dashboard` en un servicio con ejecución de Python.
-
-## Estructura relevante
+## Estructura del proyecto
 
 ```text
 crypto-api/
-  app/
-    main.py                 API FastAPI
-    coingecko_client.py     Adaptador público de Binance
-    ingestion_service.py    Persistencia e idempotencia
-    market_service.py       Consultas y resúmenes
+└── app/
+    ├── main.py                 API FastAPI y rutas
+    ├── coingecko_client.py     Adaptador HTTP para Binance
+    ├── config.py               Configuración por entorno
+    ├── database.py             Motor y sesiones SQLite
+    ├── ingestion_service.py    Modelos e ingestión idempotente
+    ├── market_service.py       Consultas y resúmenes
+    └── schemas.py              Validación de solicitudes y respuestas
 crypto-dashboard/
-  app.py                    Interfaz Streamlit
-  api_client.py             Cliente HTTP de FastAPI
-  charts.py                 Gráficas
-  indicators.py             Indicadores
-docs/
-  index.html                Página para GitHub Pages
-compose.yaml                Despliegue de dos servicios
-run-mvp.sh                  Arranque local
+├── app.py                      Interfaz Streamlit
+├── api_client.py               Cliente HTTP de FastAPI
+├── charts.py                   Gráficas
+└── indicators.py               Indicadores
+docs/index.html                 Portada de GitHub Pages
+compose.yaml                    Despliegue con Docker Compose
+run-mvp.sh                      Arranque local
 ```
 
-## Limitaciones de datos
+## Calidad y verificación
+
+Validaciones realizadas durante el desarrollo:
+
+- Compilación de los módulos Python.
+- Arranque de FastAPI con SQLite.
+- Respuesta correcta de `/health`.
+- Arranque de Streamlit.
+- Verificación del adaptador de Binance sin autenticación.
+- Verificación de la publicación estática en `docs/`.
+
+## Limitaciones conocidas
 
 Binance puede limitar solicitudes, bloquear regiones o no disponer de todos los
-pares. El MVP conserva los datos anteriores si una descarga falla y registra
-el error en `ingestion_runs`. Los resultados dependen de la disponibilidad y
-exactitud de la fuente externa.
+pares. La API registra las ejecuciones y conserva los datos anteriores si una
+descarga falla. La disponibilidad, granularidad y exactitud de los resultados
+dependen del proveedor externo.
+
+## Licencia
+
+Consulta el archivo [`LICENSE`](./LICENSE) para conocer los términos de uso del
+proyecto.
