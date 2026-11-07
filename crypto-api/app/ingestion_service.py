@@ -157,7 +157,7 @@ def ingest_market_data(session: Session, request: IngestRequest) -> dict:
                     "total_volume": (
                         Decimal(str(volumes[timestamp])) if timestamp in volumes else None
                     ),
-                    "source": "Binance",
+                    "source": "Demo local" if payload.get("demo") else "Binance",
                 }
                 for timestamp, price in sorted(prices.items())
             ]
@@ -165,11 +165,13 @@ def ingest_market_data(session: Session, request: IngestRequest) -> dict:
             statement = sqlite_insert(MarketPrice).values(rows)
             statement = statement.on_conflict_do_update(
                 index_elements=["cryptocurrency_id", "observed_at", "currency"],
-                price=statement.inserted.price,
-                market_cap=statement.inserted.market_cap,
-                total_volume=statement.inserted.total_volume,
-                source=statement.inserted.source,
-                ingested_at=datetime.now(timezone.utc).replace(tzinfo=None),
+                set_={
+                    "price": statement.excluded.price,
+                    "market_cap": statement.excluded.market_cap,
+                    "total_volume": statement.excluded.total_volume,
+                    "source": statement.excluded.source,
+                    "ingested_at": datetime.now(timezone.utc).replace(tzinfo=None),
+                },
             )
             session.execute(statement)
             run = session.get(IngestionRun, run_id)

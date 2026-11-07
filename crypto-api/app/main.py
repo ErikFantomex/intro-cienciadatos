@@ -1,5 +1,5 @@
 import logging
-from datetime import date
+from datetime import date, timedelta
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query, status
 from sqlalchemy import inspect, select, text
@@ -42,8 +42,23 @@ REQUIRED_TABLES = {"cryptocurrencies", "market_prices", "ingestion_runs"}
 @app.on_event("startup")
 def create_tables() -> None:
     from app.database import Base
+    from app.database import SessionLocal
+    from app.schemas import IngestRequest
 
     Base.metadata.create_all(bind=engine)
+    with SessionLocal() as session:
+        if session.scalar(select(MarketPrice.id).limit(1)) is None:
+            request = IngestRequest(
+                coin_ids=list(settings.default_coins),
+                currency=settings.default_currency,
+                start_date=date.today() - timedelta(days=30),
+                end_date=date.today(),
+            )
+            try:
+                ingest_market_data(session, request)
+                logger.info("Datos demo iniciales cargados para el dashboard.")
+            except Exception:
+                logger.exception("No fue posible cargar datos iniciales.")
 
 
 @app.get("/health", tags=["Health"])

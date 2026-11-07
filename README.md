@@ -57,6 +57,8 @@ requerir un servicio externo de video.
 - Gráficas de precio, volumen, rendimientos y promedio móvil.
 - API REST documentada automáticamente con OpenAPI/Swagger.
 - Healthcheck para verificar la disponibilidad del servicio.
+- Datos demo locales claramente identificados para mostrar el producto sin
+  depender de la red durante una presentación.
 
 ## Alcance y límites
 
@@ -69,6 +71,10 @@ El proyecto cubre un flujo completo y demostrable de análisis histórico:
 3. Las observaciones se validan y almacenan en SQLite.
 4. Streamlit consulta los datos guardados.
 5. El dashboard calcula indicadores y genera visualizaciones.
+
+Si Binance no está disponible, el MVP carga automáticamente una serie demo
+determinista y la etiqueta como `Demo local`. Esto permite evaluar la interfaz
+sin presentar esos valores como cotizaciones reales.
 
 ### No incluido
 
@@ -252,8 +258,9 @@ Validaciones realizadas durante el desarrollo:
 
 Binance puede limitar solicitudes, bloquear regiones o no disponer de todos los
 pares. La API registra las ejecuciones y conserva los datos anteriores si una
-descarga falla. La disponibilidad, granularidad y exactitud de los resultados
-dependen del proveedor externo.
+descarga falla. Cuando la red no permite consultar Binance, se usa una serie
+demo local identificada en la columna `source`; esos valores no son datos de
+mercado y no deben interpretarse como cotizaciones reales.
 
 ## Licencia
 

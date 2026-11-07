@@ -30,7 +30,7 @@ default_currency = os.getenv("DEFAULT_CURRENCY", "usd").lower()
 def format_number(value: float | int | None, currency: str = "") -> str:
     if value is None or pd.isna(value):
         return "Sin datos"
-    return f"{currency} {value:,.2f}".strip()
+    return f"{currency} {float(value):,.2f}".strip()
 
 
 def load_service_status() -> None:
@@ -50,7 +50,7 @@ def load_service_status() -> None:
 st.title("CryptoInsight")
 st.caption(
     "Exploración académica de datos históricos de criptomonedas "
-    "obtenidos mediante Binance."
+    "obtenidos mediante Binance o datos demo locales."
 )
 st.warning(
     "Proyecto académico. La información presentada no constituye asesoría financiera."
