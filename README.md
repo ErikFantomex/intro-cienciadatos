@@ -31,21 +31,33 @@ de ingeniería de datos pequeño, trazable y funcional.
 
 ## 2. Producto funcionando
 
-### Captura del dashboard
+### Resumen e indicadores
 
-La siguiente imagen fue tomada con FastAPI y Streamlit ejecutándose. Muestra
-los activos seleccionados, el estado de los servicios, las métricas del
-periodo y las visualizaciones históricas.
+Esta captura muestra el valor principal del producto: métricas calculadas sobre
+el periodo seleccionado para cada activo.
 
-![Dashboard de CryptoInsight funcionando](./docs/dashboard.png)
+![Resumen e indicadores de CryptoInsight](./docs/dashboard-resumen.png)
 
-### GIF del flujo de análisis
+### Gráficas de análisis
+
+La sección de gráficas permite observar precio, promedio móvil, volumen y
+rendimientos sin revisar los registros uno por uno.
+
+![Gráficas de CryptoInsight](./docs/dashboard-graficas.png)
+
+### Tabla histórica
+
+La tabla permite inspeccionar los registros procesados y descargar el resultado
+en CSV para continuar el análisis.
+
+![Tabla histórica de CryptoInsight](./docs/dashboard-tabla.png)
+
+### GIF del flujo completo
 
 ![Recorrido del dashboard de CryptoInsight](./docs/dashboard-demo.gif)
 
-El recorrido visual resume el uso del producto: seleccionar activos y fechas,
-consultar el resumen calculado y revisar las gráficas y la tabla histórica.
-Para reproducirlo localmente:
+El GIF recorre las tres vistas útiles del producto: resumen, gráficas y tabla.
+Para reproducir la demostración:
 
 ```bash
 ./run-mvp.sh
@@ -314,8 +326,10 @@ crypto-dashboard/
     ├── charts.py               Gráficas Plotly
     └── indicators.py           Indicadores de análisis
 docs/
-    ├── dashboard.png           Captura real del tablero
-    ├── dashboard-demo.gif      Recorrido visual del producto
+    ├── dashboard-resumen.png  Métricas e indicadores
+    ├── dashboard-graficas.png Gráficas de análisis
+    ├── dashboard-tabla.png    Tabla histórica
+    ├── dashboard-demo.gif     Recorrido visual del producto
     └── index.html              Portada de GitHub Pages
 compose.yaml                    Despliegue con Docker Compose
 run-mvp.sh                      Arranque local
