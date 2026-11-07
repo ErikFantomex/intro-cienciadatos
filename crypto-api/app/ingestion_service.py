@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 from sqlalchemy import (
-    BigInteger,
     Boolean,
     Column,
     Date,
@@ -15,12 +14,13 @@ from sqlalchemy import (
     Text,
     func,
     select,
+    UniqueConstraint,
 )
-from sqlalchemy.dialects.mysql import insert as mysql_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.coingecko_client import CoinGeckoError, fetch_market_chart
+from app.coingecko_client import MarketDataProviderError, fetch_market_chart
 from app.database import Base
 from app.schemas import IngestRequest
 
@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 class Cryptocurrency(Base):
     __tablename__ = "cryptocurrencies"
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     coin_id = Column(String(100), nullable=False, unique=True)
     symbol = Column(String(20))
     name = Column(String(100))
@@ -40,24 +40,30 @@ class Cryptocurrency(Base):
 
 class MarketPrice(Base):
     __tablename__ = "market_prices"
+    __table_args__ = (
+        UniqueConstraint(
+            "cryptocurrency_id", "observed_at", "currency",
+            name="uq_market_price_coin_time_currency",
+        ),
+    )
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     cryptocurrency_id = Column(
-        BigInteger, ForeignKey("cryptocurrencies.id"), nullable=False
+        Integer, ForeignKey("cryptocurrencies.id"), nullable=False
     )
     observed_at = Column(DateTime, nullable=False)
     currency = Column(String(10), nullable=False, default="usd")
     price = Column(Numeric(30, 10), nullable=False)
     market_cap = Column(Numeric(36, 2))
     total_volume = Column(Numeric(36, 2))
-    source = Column(String(50), nullable=False, default="CoinGecko")
+    source = Column(String(50), nullable=False, default="Binance")
     ingested_at = Column(DateTime, nullable=False, server_default=func.current_timestamp())
 
 
 class IngestionRun(Base):
     __tablename__ = "ingestion_runs"
 
-    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     coin_id = Column(String(100), nullable=False)
     currency = Column(String(10), nullable=False)
     start_date = Column(Date, nullable=False)
@@ -123,7 +129,7 @@ def ingest_market_data(session: Session, request: IngestRequest) -> dict:
             market_caps = _series_by_time(payload.get("market_caps", []))
             volumes = _series_by_time(payload.get("total_volumes", []))
             if not prices:
-                raise CoinGeckoError(f"CoinGecko no devolvió precios para {coin_id}.")
+                raise MarketDataProviderError(f"Binance no devolvió precios para {coin_id}.")
 
             coin = session.scalar(
                 select(Cryptocurrency).where(Cryptocurrency.coin_id == coin_id)
@@ -151,13 +157,14 @@ def ingest_market_data(session: Session, request: IngestRequest) -> dict:
                     "total_volume": (
                         Decimal(str(volumes[timestamp])) if timestamp in volumes else None
                     ),
-                    "source": "CoinGecko",
+                    "source": "Binance",
                 }
                 for timestamp, price in sorted(prices.items())
             ]
 
-            statement = mysql_insert(MarketPrice).values(rows)
-            statement = statement.on_duplicate_key_update(
+            statement = sqlite_insert(MarketPrice).values(rows)
+            statement = statement.on_conflict_do_update(
+                index_elements=["cryptocurrency_id", "observed_at", "currency"],
                 price=statement.inserted.price,
                 market_cap=statement.inserted.market_cap,
                 total_volume=statement.inserted.total_volume,
@@ -180,8 +187,8 @@ def ingest_market_data(session: Session, request: IngestRequest) -> dict:
                     "status": "success",
                 }
             )
-        except CoinGeckoError as error:
-            logger.warning("CoinGecko ingestion failed for %s: %s", coin_id, error)
+        except MarketDataProviderError as error:
+            logger.warning("Binance ingestion failed for %s: %s", coin_id, error)
             _save_failure(session, run_id, received, str(error))
             failures.append(error)
             results.append(
@@ -200,7 +207,7 @@ def ingest_market_data(session: Session, request: IngestRequest) -> dict:
         except Exception as error:
             logger.exception("Unexpected ingestion failure for %s", coin_id)
             _save_failure(session, run_id, received, "Error interno al procesar los datos.")
-            failures.append(CoinGeckoError("Error interno al procesar los datos.", 500))
+            failures.append(MarketDataProviderError("Error interno al procesar los datos.", 500))
             results.append(
                 {
                     "coin_id": coin_id,
@@ -213,7 +220,7 @@ def ingest_market_data(session: Session, request: IngestRequest) -> dict:
 
     if failures and len(failures) == len(request.coin_ids):
         code = 429 if any(error.status_code == 429 for error in failures) else failures[0].status_code
-        raise CoinGeckoError("No se pudo completar ninguna ingestión.", code)
+        raise MarketDataProviderError("No se pudo completar ninguna ingestión.", code)
 
     return {
         "currency": request.currency,

@@ -6,7 +6,7 @@ from sqlalchemy import inspect, select, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.coingecko_client import CoinGeckoError
+from app.coingecko_client import MarketDataProviderError
 from app.config import settings
 from app.database import engine, get_session
 from app.ingestion_service import (
@@ -37,6 +37,13 @@ app = FastAPI(title="CryptoInsight Data API", version="1.0.0")
 router = APIRouter(prefix="/api", dependencies=[Depends(require_internal_key)])
 
 REQUIRED_TABLES = {"cryptocurrencies", "market_prices", "ingestion_runs"}
+
+
+@app.on_event("startup")
+def create_tables() -> None:
+    from app.database import Base
+
+    Base.metadata.create_all(bind=engine)
 
 
 @app.get("/health", tags=["Health"])
@@ -106,7 +113,7 @@ def ingest(
 ) -> dict:
     try:
         return ingest_market_data(session, request)
-    except CoinGeckoError as error:
+    except MarketDataProviderError as error:
         raise HTTPException(status_code=error.status_code, detail=str(error)) from error
     except SQLAlchemyError as error:
         session.rollback()

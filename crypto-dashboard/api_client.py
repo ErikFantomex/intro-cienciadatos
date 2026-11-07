@@ -10,7 +10,7 @@ class ApiClientError(Exception):
 
 class NestApiClient:
     def __init__(self) -> None:
-        self.base_url = os.getenv("NEST_API_URL", "http://nest-api:3000").rstrip("/")
+        self.base_url = os.getenv("CRYPTO_API_URL", "http://localhost:8000").rstrip("/")
         self.timeout = httpx.Timeout(15.0, connect=5.0)
 
     def _request(
@@ -22,7 +22,7 @@ class NestApiClient:
         json: dict[str, Any] | None = None,
         token: str | None = None,
     ) -> Any:
-        headers = {"Authorization": f"Bearer {token}"} if token else {}
+        headers = {}
         try:
             response = httpx.request(
                 method,
@@ -40,7 +40,7 @@ class NestApiClient:
                 401: "Inicia sesión para actualizar los datos.",
                 403: "Tu usuario no tiene permiso para actualizar los datos.",
                 404: "No se encontró la información solicitada.",
-                429: "CoinGecko limitó las consultas; espera antes de reintentar.",
+                429: "Binance limitó las consultas; espera antes de reintentar.",
                 502: "El proveedor devolvió una respuesta inválida.",
                 503: "Un servicio financiero no está disponible.",
             }
@@ -57,10 +57,10 @@ class NestApiClient:
             raise ApiClientError("NestJS devolvió una respuesta inválida.") from error
 
     def health(self) -> dict[str, Any]:
-        return self._request("GET", "/api/crypto/health")
+        return self._request("GET", "/health")
 
     def coins(self) -> list[dict[str, Any]]:
-        return self._request("GET", "/api/crypto/coins")
+        return self._request("GET", "/api/coins")
 
     def market_data(
         self,
@@ -71,7 +71,7 @@ class NestApiClient:
     ) -> list[dict[str, Any]]:
         return self._request(
             "GET",
-            "/api/crypto/market-data",
+            "/api/market-data",
             params={
                 "coin_ids": ",".join(coin_ids),
                 "currency": currency,
@@ -89,7 +89,7 @@ class NestApiClient:
     ) -> list[dict[str, Any]]:
         return self._request(
             "GET",
-            "/api/crypto/market-summary",
+            "/api/market-summary",
             params={
                 "coin_ids": ",".join(coin_ids),
                 "currency": currency,
@@ -108,7 +108,7 @@ class NestApiClient:
     ) -> dict[str, Any]:
         return self._request(
             "POST",
-            "/api/crypto/ingest",
+            "/api/ingest",
             json={
                 "coin_ids": coin_ids,
                 "currency": currency,
@@ -120,12 +120,8 @@ class NestApiClient:
 
     def ingestion_runs(self, limit: int = 50) -> list[dict[str, Any]]:
         return self._request(
-            "GET", "/api/crypto/ingestion-runs", params={"limit": limit}
+            "GET", "/api/ingestion-runs", params={"limit": limit}
         )
 
     def login(self, email: str, password: str) -> dict[str, Any]:
-        return self._request(
-            "POST",
-            "/api/auth/login",
-            json={"email": email, "password": password},
-        )
+        raise ApiClientError("El MVP no requiere inicio de sesión.")

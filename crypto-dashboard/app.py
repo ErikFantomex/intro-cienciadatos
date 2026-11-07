@@ -43,40 +43,19 @@ def load_service_status() -> None:
         else:
             st.sidebar.warning("FastAPI o MySQL no están saludables.")
     except ApiClientError as error:
-        st.sidebar.error("NestJS / FastAPI: no disponible")
+        st.sidebar.error("API de datos: no disponible")
         st.sidebar.caption(str(error))
 
 
 st.title("CryptoInsight")
 st.caption(
     "Exploración académica de datos históricos de criptomonedas "
-    "obtenidos mediante CoinGecko."
+    "obtenidos mediante Binance."
 )
 st.warning(
     "Proyecto académico. La información presentada no constituye asesoría financiera."
 )
 load_service_status()
-
-with st.sidebar:
-    st.header("Acceso para ingestión")
-    email = st.text_input("Correo de usuario", key="login_email")
-    password = st.text_input("Contraseña", type="password", key="login_password")
-    if st.button("Iniciar sesión"):
-        try:
-            login = client.login(email, password)
-            token = login.get("token")
-            if not token:
-                st.error("La respuesta de inicio de sesión no incluyó un token.")
-            else:
-                st.session_state["jwt_token"] = token
-                st.success("Sesión iniciada.")
-        except ApiClientError as error:
-            st.error(str(error))
-    if st.session_state.get("jwt_token"):
-        st.caption("Sesión autenticada para solicitar una ingestión.")
-        if st.button("Cerrar sesión"):
-            st.session_state.pop("jwt_token", None)
-            st.rerun()
 
 try:
     registered_coins = client.coins()
@@ -122,11 +101,8 @@ with st.sidebar:
     )
     st.button("Recargar datos")
 
-    if st.button("Actualizar desde CoinGecko", type="primary"):
-        token = st.session_state.get("jwt_token")
-        if not token:
-            st.error("Inicia sesión antes de solicitar una ingestión.")
-        elif not selected_coins:
+    if st.button("Actualizar desde Binance", type="primary"):
+        if not selected_coins:
             st.error("Selecciona al menos una criptomoneda.")
         elif end_date < start_date:
             st.error("La fecha final debe ser igual o posterior a la inicial.")
@@ -137,7 +113,7 @@ with st.sidebar:
                     currency,
                     start_date.isoformat(),
                     end_date.isoformat(),
-                    token,
+                    "",
                 )
                 for result in outcome.get("results", []):
                     if result.get("status") == "success":

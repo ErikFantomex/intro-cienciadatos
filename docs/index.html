@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CryptoInsight MVP</title>
+  <style>
+    :root { color-scheme: dark; --bg: #0b1220; --panel: #121d30; --text: #e8eef8; --muted: #a9b8cf; --accent: #55d6be; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 16px/1.6 system-ui, sans-serif; background: linear-gradient(140deg, #0b1220, #16243b); color: var(--text); }
+    main { max-width: 960px; margin: auto; padding: 64px 24px; }
+    .tag { color: var(--accent); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    h1 { font-size: clamp(2.4rem, 7vw, 5rem); line-height: 1; margin: 16px 0; }
+    h2 { margin-top: 48px; }
+    p, li { color: var(--muted); }
+    .card { background: rgba(18, 29, 48, .9); border: 1px solid #263957; border-radius: 16px; padding: 24px; margin-top: 24px; }
+    .buttons { display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0; }
+    a { color: #07131d; background: var(--accent); border-radius: 999px; display: inline-block; font-weight: 700; padding: 10px 18px; text-decoration: none; }
+    a.secondary { color: var(--text); background: transparent; border: 1px solid #49617e; }
+    code { color: var(--accent); }
+    footer { border-top: 1px solid #263957; margin-top: 56px; padding-top: 20px; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="tag">Proyecto académico · MVP</div>
+    <h1>CryptoInsight</h1>
+    <p>Consulta, almacenamiento y visualización de precios históricos de
+      criptomonedas usando Binance, FastAPI, SQLite y Streamlit.</p>
+    <div class="buttons">
+      <a href="https://github.com/Erikafantomex/intro-cienciadatos">Ver repositorio</a>
+      <a class="secondary" href="https://github.com/Erikafantomex/intro-cienciadatos/blob/main/README.md">Leer documentación</a>
+    </div>
+    <section class="card">
+      <h2>Qué incluye</h2>
+      <ul>
+        <li>Velas diarias públicas sin API key ni login.</li>
+        <li>Filtros por moneda y rango de fechas.</li>
+        <li>Indicadores, rendimientos, volumen y gráficas.</li>
+        <li>Persistencia local e ingestiones sin duplicados.</li>
+      </ul>
+    </section>
+    <section class="card">
+      <h2>Probarlo</h2>
+      <p>GitHub Pages sirve esta portada, pero no ejecuta Python. Para abrir el
+        dashboard interactivo clona el repositorio y ejecuta:</p>
+      <p><code>./run-mvp.sh</code></p>
+      <p>Después visita <code>http://127.0.0.1:8501</code>.</p>
+    </section>
+    <section class="card">
+      <h2>Alcance</h2>
+      <p>Es una herramienta educativa de consulta histórica. No compra, vende,
+        predice precios ni ofrece recomendaciones financieras.</p>
+    </section>
+    <footer>CryptoInsight MVP · Datos externos proporcionados por Binance.</footer>
+  </main>
+</body>
+</html>

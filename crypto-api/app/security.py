@@ -9,10 +9,7 @@ def require_internal_key(
 ) -> None:
     expected_key = settings.internal_api_key
     if not expected_key:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="La autenticación interna no está configurada.",
-        )
+        return
     if provided_key is None or not hmac.compare_digest(provided_key, expected_key):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -12,9 +12,7 @@ class Base(DeclarativeBase):
 
 engine = create_engine(
     settings.database_url,
-    pool_pre_ping=True,
-    pool_recycle=1800,
-    connect_args={"connect_timeout": 5},
+    connect_args={"check_same_thread": False},
 )
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
