@@ -1,122 +1,210 @@
 # CryptoInsight
 
-> MVP académico para explorar datos históricos de criptomonedas.
+> MVP de ingeniería de datos para transformar velas públicas de criptomonedas
+> en información histórica consultable y visualizable.
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/API-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Streamlit](https://img.shields.io/badge/UI-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
-[![Data](https://img.shields.io/badge/data-Binance%20public-F0B90B)](https://www.binance.com/en/markets)
+[![Fuente](https://img.shields.io/badge/fuente-Binance%20p%C3%BAblica-F0B90B)](https://www.binance.com/en/markets)
 
-CryptoInsight permite consultar, almacenar y visualizar precios históricos de
-criptomonedas. La aplicación obtiene velas diarias desde la API pública de
-Binance, las persiste en SQLite y presenta métricas y visualizaciones mediante
-Streamlit.
+## 1. Propósito del proyecto
 
-**Aviso:** este proyecto es educativo. No ejecuta operaciones, no administra
-fondos y no constituye asesoría financiera.
+CryptoInsight resuelve un problema concreto: convertir datos de mercado
+disponibles públicamente en una pequeña solución analítica reproducible.
 
-## Demo y documentación
+El sistema:
 
-- **Página del proyecto:** <https://Erikafantomex.github.io/intro-cienciadatos/>
-- **Repositorio:** <https://github.com/Erikafantomex/intro-cienciadatos>
-- **Swagger local:** <http://127.0.0.1:8000/docs>
+1. Obtiene velas diarias desde la API pública de Binance.
+2. Valida y normaliza los datos recibidos.
+3. Persiste las observaciones en SQLite.
+4. Evita duplicados cuando se repite una ingestión.
+5. Expone los datos mediante una API REST.
+6. Calcula indicadores y los presenta en un dashboard.
 
-GitHub Pages publica la portada y documentación estática. El dashboard
-interactivo requiere ejecutar Python en local o desplegarlo en una plataforma
-que soporte aplicaciones Python, como Streamlit Community Cloud, Render o
-Railway.
+El resultado es un flujo completo de datos, desde la fuente externa hasta una
+interfaz de análisis. El objetivo no es hacer trading: es demostrar un proceso
+de ingeniería de datos pequeño, trazable y funcional.
 
-## Vista del producto
+> **Aviso:** los datos y las métricas son educativos. CryptoInsight no compra,
+> vende, predice precios ni ofrece asesoría financiera.
 
-### Dashboard en funcionamiento
+## 2. Producto funcionando
 
-![CryptoInsight dashboard](./docs/dashboard.png)
+### Captura del dashboard
 
-La captura anterior fue tomada con la aplicación ejecutándose localmente. La
-vista muestra la interfaz de selección de activos, rango de fechas, conexión
-con la API y las secciones de resumen, datos históricos y visualizaciones.
+La siguiente imagen fue tomada con FastAPI y Streamlit ejecutándose. Muestra
+los activos seleccionados, el estado de los servicios, las métricas del
+periodo y las visualizaciones históricas.
 
-### Recorrido visual
+![Dashboard de CryptoInsight funcionando](./docs/dashboard.png)
 
-![Recorrido visual de CryptoInsight](./docs/dashboard-demo.gif)
+### GIF del flujo de análisis
 
-Para una demostración reproducible, ejecuta `./run-mvp.sh` y abre
-<http://127.0.0.1:8501>. El repositorio incluye esta vista animada como
-previsualización ligera; GitHub renderiza GIF directamente en el README sin
-requerir un servicio externo de video.
+![Recorrido del dashboard de CryptoInsight](./docs/dashboard-demo.gif)
 
-## Funcionalidades
+El recorrido visual resume el uso del producto: seleccionar activos y fechas,
+consultar el resumen calculado y revisar las gráficas y la tabla histórica.
+Para reproducirlo localmente:
 
-- Consulta de velas diarias desde Binance Spot.
-- Sin API key, cuenta de Binance ni autenticación de usuario.
-- Selección de criptomonedas y rango de fechas.
-- Soporte para `usd`, `usdt` y `eur`.
-- Persistencia local en SQLite.
-- Ingestión idempotente: repetir una consulta no duplica observaciones.
-- Indicadores de precio inicial, final, máximo, mínimo, promedio y variación.
-- Gráficas de precio, volumen, rendimientos y promedio móvil.
-- API REST documentada automáticamente con OpenAPI/Swagger.
-- Healthcheck para verificar la disponibilidad del servicio.
-- Datos demo locales claramente identificados para mostrar el producto sin
-  depender de la red durante una presentación.
+```bash
+./run-mvp.sh
+```
 
-## Alcance y límites
+Después abre <http://127.0.0.1:8501>.
 
-### Incluido en este MVP
+## 3. Alcance del MVP
 
-El proyecto cubre un flujo completo y demostrable de análisis histórico:
+### Incluido
 
-1. El usuario selecciona un activo y un periodo.
-2. FastAPI solicita las velas a Binance.
-3. Las observaciones se validan y almacenan en SQLite.
-4. Streamlit consulta los datos guardados.
-5. El dashboard calcula indicadores y genera visualizaciones.
+- Consulta de velas diarias de Binance Spot.
+- Consumo sin API key, cuenta externa ni login.
+- Activos iniciales: Bitcoin, Ethereum y Solana.
+- Incorporación de otros símbolos compatibles con Binance.
+- Monedas de cotización: `usd`, `usdt` y `eur`.
+- Persistencia local en `cryptoinsight.db`.
+- Ingestión idempotente por activo, fecha y moneda.
+- Precio inicial, final, máximo, mínimo, promedio y variación.
+- Volumen, rendimientos, promedio móvil y rendimiento acumulado.
+- Historial de ejecuciones de ingestión.
+- API documentada con OpenAPI/Swagger.
+- Datos demo locales claramente identificados si la red no permite consultar
+  Binance, para que el producto siga siendo demostrable.
 
-Si Binance no está disponible, el MVP carga automáticamente una serie demo
-determinista y la etiqueta como `Demo local`. Esto permite evaluar la interfaz
-sin presentar esos valores como cotizaciones reales.
+### Fuera del alcance
 
-### No incluido
-
-- Compra, venta, órdenes o trading automatizado.
+- Órdenes, compra, venta o trading automatizado.
 - Conexión a cuentas, saldos o claves privadas de Binance.
 - Portafolios, alertas, predicciones o señales de inversión.
-- Usuarios, roles, login, JWT o pagos.
-- MySQL, PostgreSQL, NestJS o el módulo de productos de la versión anterior.
-- Dashboard ejecutable directamente en GitHub Pages.
+- Usuarios, roles, pagos, JWT o autenticación.
+- MySQL, PostgreSQL, NestJS y el módulo de productos de la versión anterior.
+- Ejecución de FastAPI o Streamlit dentro de GitHub Pages.
 
-## Arquitectura
+## 4. Proceso de ingeniería de datos
+
+### 4.1 Fuente y extracción
+
+FastAPI solicita velas diarias al endpoint público de Binance:
 
 ```text
-┌──────────────┐       HTTP        ┌──────────────┐
-│  Streamlit   │ ────────────────> │   FastAPI    │
-│    :8501     │                   │    :8000     │
-└──────────────┘                   └──────┬───────┘
-                                          │
-                             ┌────────────┴────────────┐
-                             │                         │
-                       Binance API              SQLite local
-                    (fuente pública)          (cryptoinsight.db)
+GET https://api.binance.com/api/v3/klines
+```
+
+La consulta se construye con:
+
+- `symbol`: por ejemplo, `BTCUSDT`.
+- `interval=1d`.
+- `startTime` y `endTime` en milisegundos UTC.
+- `limit` para controlar el tamaño de la respuesta.
+
+Los identificadores amigables se traducen a mercados:
+
+| Entrada | Mercado |
+|---|---|
+| `bitcoin` o `btc` | `BTCUSDT` |
+| `ethereum` o `eth` | `ETHUSDT` |
+| `solana` o `sol` | `SOLUSDT` |
+| `dogecoin` o `doge` | `DOGEUSDT` |
+
+### 4.2 Validación y normalización
+
+Antes de persistir, la API:
+
+- Normaliza identificadores y monedas a minúsculas.
+- Valida el formato de los activos.
+- Rechaza rangos donde la fecha final sea anterior a la inicial.
+- Convierte timestamps de Binance a `datetime` UTC.
+- Convierte precios y volúmenes a valores numéricos controlados.
+- Rechaza respuestas externas con estructura inválida.
+- Registra errores de proveedor sin ocultarlos al usuario.
+
+Si Binance no responde por restricciones de red del entorno, se genera una
+serie demo determinista. Esa serie se marca explícitamente como `Demo local`
+en la columna `source`; nunca se presenta como cotización real.
+
+### 4.3 Modelo de almacenamiento
+
+SQLite mantiene tres entidades:
+
+| Tabla | Propósito |
+|---|---|
+| `cryptocurrencies` | Catálogo de activos consultados |
+| `market_prices` | Precio, volumen, fecha, moneda y fuente |
+| `ingestion_runs` | Estado, rango, contadores y errores de cada ejecución |
+
+La tabla `market_prices` tiene una restricción única sobre:
+
+```text
+cryptocurrency_id + observed_at + currency
+```
+
+Por eso repetir una ingestión actualiza la observación existente en vez de
+crear duplicados. La persistencia se realiza mediante un upsert SQLite.
+
+### 4.4 Transformación y consumo
+
+El servicio de mercado transforma las filas almacenadas en dos salidas:
+
+- **Datos históricos:** registros ordenados por fecha y activo.
+- **Resumen:** precio inicial y final, máximo, mínimo, promedio, variación,
+  volumen reciente y número de observaciones.
+
+Streamlit consume esas salidas por HTTP y calcula visualizaciones adicionales:
+
+- Precio histórico.
+- Promedio móvil.
+- Volumen y capitalización disponible.
+- Rendimientos diarios.
+- Rendimiento acumulado.
+- Serie normalizada.
+- Histograma de rendimientos.
+
+### 4.5 Trazabilidad y resiliencia
+
+Cada ingestión se registra en `ingestion_runs` con:
+
+- Activo y moneda.
+- Fecha inicial y final.
+- Registros recibidos.
+- Registros guardados o actualizados.
+- Estado: `running`, `success` o `failed`.
+- Mensaje de error y timestamps.
+
+Si una fuente externa falla, los datos previamente guardados no se eliminan.
+Esto permite mantener la continuidad del análisis y distinguir entre datos
+reales de Binance y datos demo.
+
+## 5. Arquitectura
+
+```text
+┌────────────────────┐       HTTP        ┌────────────────────┐
+│ Streamlit :8501    │ ────────────────> │ FastAPI :8000      │
+│ filtros y gráficas │                   │ API y pipeline    │
+└────────────────────┘                   └─────────┬──────────┘
+                                                   │
+                              ┌────────────────────┴───────────────┐
+                              │                                    │
+                    Binance Spot API pública              SQLite local
+                    extracción de velas                 cryptoinsight.db
 ```
 
 | Componente | Responsabilidad |
 |---|---|
-| `crypto-dashboard` | Interfaz, filtros, métricas y gráficas |
-| `crypto-api` | Validación, ingestión, persistencia y consultas |
-| Binance Spot API | Fuente externa de velas públicas |
-| SQLite | Almacenamiento local sin configuración adicional |
+| `crypto-dashboard` | Interfaz, filtros, métricas y visualizaciones |
+| `crypto-api` | Validación, extracción, transformación, persistencia y API |
+| Binance | Fuente externa de datos |
+| SQLite | Almacenamiento local e idempotencia |
 
-## Requisitos
+## 6. Ejecución local
 
-Para ejecutar localmente:
+### Requisitos
 
 - Python 3.10 o superior.
 - `curl`.
-- Acceso de red a `api.binance.com`.
+- Acceso de red a Binance para datos reales.
+- Docker es opcional.
 
-Docker y una cuenta externa no son necesarios.
-
-## Inicio rápido
+### Inicio rápido
 
 Desde la raíz del proyecto:
 
@@ -125,61 +213,42 @@ chmod +x run-mvp.sh
 ./run-mvp.sh
 ```
 
-El script:
+El script crea `.venv`, instala dependencias, inicia FastAPI y arranca
+Streamlit. URLs disponibles:
 
-1. Crea el entorno virtual `.venv`.
-2. Instala las dependencias de FastAPI y Streamlit.
-3. Inicia la API en el puerto `8000`.
-4. Inicia el dashboard en el puerto `8501`.
+| Servicio | URL |
+|---|---|
+| Dashboard | <http://127.0.0.1:8501> |
+| Swagger | <http://127.0.0.1:8000/docs> |
+| Healthcheck | <http://127.0.0.1:8000/health> |
 
-Abre el dashboard en <http://127.0.0.1:8501>.
+Presiona `Ctrl+C` para detener los servicios.
 
-La base de datos se crea automáticamente como `cryptoinsight.db`. Para detener
-ambos servicios, presiona `Ctrl+C`.
-
-## Ejecución con Docker
-
-Con Docker Compose instalado:
+### Docker Compose
 
 ```bash
 docker compose up --build
 ```
 
-Servicios publicados:
+Compose publica los mismos puertos y utiliza el volumen `crypto_data` para
+conservar SQLite entre reinicios.
 
-| Servicio | URL |
-|---|---|
-| Dashboard | <http://127.0.0.1:8501> |
-| API y Swagger | <http://127.0.0.1:8000/docs> |
-| Healthcheck | <http://127.0.0.1:8000/health> |
+## 7. Uso del dashboard
 
-El volumen `crypto_data` conserva la base SQLite entre reinicios.
-
-## Uso del dashboard
-
-1. Selecciona una o más criptomonedas.
-2. Selecciona una moneda de cotización: `usd`, `usdt` o `eur`.
-3. Define la fecha inicial y la fecha final.
+1. Selecciona uno o varios activos.
+2. Selecciona `usd`, `usdt` o `eur`.
+3. Define las fechas inicial y final.
 4. Presiona **Actualizar desde Binance**.
-5. Consulta los indicadores y las gráficas.
+5. Revisa el resumen, los indicadores, las gráficas y la tabla histórica.
 
-Los identificadores comunes se traducen a mercados de Binance:
+Si el símbolo no existe en Binance, la API devuelve un error y no inventa
+observaciones. Si el proveedor está bloqueado por la red, el sistema utiliza
+datos demo locales identificados en el historial.
 
-| Identificador | Mercado consultado |
-|---|---|
-| `bitcoin` o `btc` | `BTCUSDT` |
-| `ethereum` o `eth` | `ETHUSDT` |
-| `solana` o `sol` | `SOLUSDT` |
-| `dogecoin` o `doge` | `DOGEUSDT` |
-
-También se pueden agregar otros identificadores si existe el mercado
-correspondiente en Binance. Un símbolo inválido produce un error y no genera
-datos ficticios.
-
-## API
+## 8. API REST
 
 La especificación interactiva está disponible en
-<http://127.0.0.1:8000/docs> después de iniciar el proyecto.
+<http://127.0.0.1:8000/docs>.
 
 | Método | Endpoint | Descripción |
 |---|---|---|
@@ -187,10 +256,10 @@ La especificación interactiva está disponible en
 | `GET` | `/api/coins` | Lista activos almacenados |
 | `GET` | `/api/market-data` | Consulta observaciones históricas |
 | `GET` | `/api/market-summary` | Devuelve indicadores agregados |
-| `POST` | `/api/ingest` | Descarga y guarda velas de Binance |
+| `POST` | `/api/ingest` | Ejecuta extracción y persistencia |
 | `GET` | `/api/ingestion-runs` | Lista ejecuciones recientes |
 
-### Ejemplo de ingestión
+Ejemplo:
 
 ```bash
 curl -X POST http://127.0.0.1:8000/api/ingest \
@@ -205,64 +274,77 @@ curl -X POST http://127.0.0.1:8000/api/ingest \
 
 No se requieren encabezados de autenticación en este MVP.
 
-## Publicación en GitHub Pages
+## 9. Publicación
+
+### GitHub Pages
 
 La página estática se encuentra en [`docs/index.html`](./docs/index.html) y se
-publica mediante [`.github/workflows/pages.yml`](./.github/workflows/pages.yml).
+publica con [`.github/workflows/pages.yml`](./.github/workflows/pages.yml).
 
-Para activarla:
+URL del proyecto:
 
-1. Sube el repositorio a GitHub.
-2. Abre **Settings → Pages**.
-3. Selecciona **GitHub Actions** como fuente de despliegue.
-4. Ejecuta un push a la rama `main`.
+<https://Erikafantomex.github.io/intro-cienciadatos/>
 
-GitHub Pages no ejecuta FastAPI, SQLite ni Streamlit. Para publicar el
-dashboard, despliega `crypto-api` y `crypto-dashboard` en un proveedor con
-soporte para Python y configura `CRYPTO_API_URL` con la URL pública de FastAPI.
+GitHub Pages sirve la portada, pero no ejecuta Python. Para publicar el
+dashboard interactivo hay que desplegar los dos servicios en una plataforma
+con soporte para Python y configurar `CRYPTO_API_URL`.
 
-## Estructura del proyecto
+### Opciones para el dashboard
+
+- Streamlit Community Cloud.
+- Render.
+- Railway.
+- Un servidor propio con Docker Compose.
+
+## 10. Estructura del proyecto
 
 ```text
 crypto-api/
 └── app/
-    ├── main.py                 API FastAPI y rutas
-    ├── coingecko_client.py     Adaptador HTTP para Binance
+    ├── main.py                 API FastAPI y ciclo de inicio
+    ├── coingecko_client.py     Adaptador HTTP para Binance y fallback demo
     ├── config.py               Configuración por entorno
     ├── database.py             Motor y sesiones SQLite
-    ├── ingestion_service.py    Modelos e ingestión idempotente
+    ├── ingestion_service.py    Modelos, upsert e historial de ingestión
     ├── market_service.py       Consultas y resúmenes
     └── schemas.py              Validación de solicitudes y respuestas
 crypto-dashboard/
-├── app.py                      Interfaz Streamlit
-├── api_client.py               Cliente HTTP de FastAPI
-├── charts.py                   Gráficas
-└── indicators.py               Indicadores
-docs/index.html                 Portada de GitHub Pages
+    ├── app.py                  Interfaz Streamlit
+    ├── api_client.py           Cliente HTTP de FastAPI
+    ├── charts.py               Gráficas Plotly
+    └── indicators.py           Indicadores de análisis
+docs/
+    ├── dashboard.png           Captura real del tablero
+    ├── dashboard-demo.gif      Recorrido visual del producto
+    └── index.html              Portada de GitHub Pages
 compose.yaml                    Despliegue con Docker Compose
 run-mvp.sh                      Arranque local
 ```
 
-## Calidad y verificación
+## 11. Verificación
 
-Validaciones realizadas durante el desarrollo:
+El MVP se validó con:
 
 - Compilación de los módulos Python.
-- Arranque de FastAPI con SQLite.
+- Arranque de FastAPI con SQLite vacío.
+- Creación automática de tablas.
+- Carga inicial de 31 observaciones demo por activo.
 - Respuesta correcta de `/health`.
-- Arranque de Streamlit.
-- Verificación del adaptador de Binance sin autenticación.
-- Verificación de la publicación estática en `docs/`.
+- Respuesta de `/api/market-data` y `/api/market-summary`.
+- Renderizado de métricas y gráficas en Streamlit.
+- Verificación de ingestión idempotente.
+- Captura del dashboard funcionando.
 
-## Limitaciones conocidas
+## 12. Limitaciones
 
 Binance puede limitar solicitudes, bloquear regiones o no disponer de todos los
-pares. La API registra las ejecuciones y conserva los datos anteriores si una
-descarga falla. Cuando la red no permite consultar Binance, se usa una serie
-demo local identificada en la columna `source`; esos valores no son datos de
-mercado y no deben interpretarse como cotizaciones reales.
+pares. La granularidad está fijada en velas diarias. La disponibilidad y
+exactitud de los datos reales dependen del proveedor externo.
+
+Los datos demo existen únicamente para garantizar una demostración funcional
+cuando no hay conectividad. Están marcados como `Demo local` y no deben usarse
+para tomar decisiones financieras.
 
 ## Licencia
 
-Consulta el archivo [`LICENSE`](./LICENSE) para conocer los términos de uso del
-proyecto.
+Consulta [`LICENSE`](./LICENSE) para conocer los términos de uso.
