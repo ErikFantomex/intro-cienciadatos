@@ -36,12 +36,12 @@ def format_number(value: float | int | None, currency: str = "") -> str:
 def load_service_status() -> None:
     try:
         health = client.health()
-        st.sidebar.success("NestJS: disponible")
+        st.sidebar.success("API: disponible")
         if health.get("status") == "healthy":
             st.sidebar.success("FastAPI: disponible")
-            st.sidebar.success("MySQL: conectado")
+            st.sidebar.success("SQLite: conectado")
         else:
-            st.sidebar.warning("FastAPI o MySQL no están saludables.")
+            st.sidebar.warning("FastAPI o SQLite no están saludables.")
     except ApiClientError as error:
         st.sidebar.error("API de datos: no disponible")
         st.sidebar.caption(str(error))
@@ -165,7 +165,7 @@ else:
                 details[3].metric("Primera observación", str(row["first_observed_at"]))
                 details[4].metric("Última observación", str(row["last_observed_at"]))
         else:
-            st.info("No hay datos almacenados para este periodo. Inicia sesión y solicita una ingestión.")
+            st.info("No hay datos almacenados para este periodo. Solicita una ingestión desde Binance.")
     except ApiClientError as error:
         st.error(f"No se pudo cargar el resumen: {error}")
 

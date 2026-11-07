@@ -26,6 +26,25 @@ interactivo requiere ejecutar Python en local o desplegarlo en una plataforma
 que soporte aplicaciones Python, como Streamlit Community Cloud, Render o
 Railway.
 
+## Vista del producto
+
+### Dashboard en funcionamiento
+
+![CryptoInsight dashboard](./docs/dashboard.png)
+
+La captura anterior fue tomada con la aplicación ejecutándose localmente. La
+vista muestra la interfaz de selección de activos, rango de fechas, conexión
+con la API y las secciones de resumen, datos históricos y visualizaciones.
+
+### Recorrido visual
+
+![Recorrido visual de CryptoInsight](./docs/dashboard-demo.gif)
+
+Para una demostración reproducible, ejecuta `./run-mvp.sh` y abre
+<http://127.0.0.1:8501>. El repositorio incluye esta vista animada como
+previsualización ligera; GitHub renderiza GIF directamente en el README sin
+requerir un servicio externo de video.
+
 ## Funcionalidades
 
 - Consulta de velas diarias desde Binance Spot.
